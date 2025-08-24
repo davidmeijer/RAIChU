@@ -12,3 +12,6 @@ build/
 
 # ignore all egg-info directories
 **/*.egg-info/
+
+# ignore /out folder 
+out/
