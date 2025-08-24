@@ -152,6 +152,7 @@ class AntiSmashDomain:
     end: int
     strand: str
     gene: str
+    translation: Optional[str] = None
 
     subtype: Optional[str] = None
     active: bool = True
@@ -195,8 +196,10 @@ class AntiSmashDomain:
 
                 elif "transATor:" in spec:
                     self.raichu_subtype = spec.split("transATor:")[1].strip().replace("-", "_").replace("/", "_").upper().replace("(UNKNOWN)", "MISCELLANEOUS")
-        if not self.active and self.raichu_subtype == "C2":
-            self.active = True
+        # NOTE: commented next two lines out because otherwise 3rd elongation module's inactive KR domain in BGC cluster 
+        #       55 is inaccurately labeled as active
+        # if not self.active and self.raichu_subtype == "C2":
+        #     self.active = True
             
     def __repr__(self):
         return f"{self.raichu_type}_{self.start}_{self.end}"
@@ -629,7 +632,7 @@ class ModuleOrder:
 
                 domain_representation = DomainRepresentation(gene_name=domain.gene, type=domain.raichu_type,
                                                              subtype=domain.raichu_subtype,
-                                                             active=domain.active, used=True)
+                                                             active=domain.active, used=True, translation=domain.translation)
                 if domain_representation.type in [d.type for d in domain_representations]:
                     domain_representation.used = False
                 if domain_representation.type == 'UNKNOWN':
@@ -1024,7 +1027,8 @@ def parse_antismash_domains_gbk(antismash_gbk, version="7.1.0"):
                                          int(feature.location.start),
                                          int(feature.location.end),
                                          feature.location.strand,
-                                         feature.qualifiers["locus_tag"][0])
+                                         feature.qualifiers["locus_tag"][0],
+                                         feature.qualifiers["translation"][0])
                 domain.add_domain_information(feature.qualifiers)
                 domain.set_raichu_type()
                 domains.append(domain)
