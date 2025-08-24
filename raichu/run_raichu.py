@@ -198,8 +198,8 @@ def build_cluster(
     for module in cluster.modules:
         if not module.is_broken:
             has_functional_modules = True
-    if not has_functional_modules:
-        print("WARNING: Cluster has no functional modules. Drawing this cluster will result in errors.")
+    # if not has_functional_modules:
+    #     print("WARNING: Cluster has no functional modules. Drawing this cluster will result in errors.")
 
     return cluster
 
