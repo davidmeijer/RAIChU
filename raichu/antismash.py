@@ -710,7 +710,11 @@ class AntiSmashGene:
         return f"{self.name}"
 
 
-def get_nrps_pks_modules(antismash_gbk):
+def get_nrps_pks_modules(antismash_gbk, return_info=False):
+    info = {
+        "test_key": "test_value"
+    }
+
     as_domains = parse_antismash_domains_gbk(antismash_gbk)
     genes = []
     for record in SeqIO.parse(antismash_gbk, "genbank"):
@@ -785,7 +789,10 @@ def get_nrps_pks_modules(antismash_gbk):
     #         if modules_per_collinear_block.modules_broken > modules_per_gene.modules_broken:
     #             module_blocks = modules_per_gene
 
-    return module_blocks
+    if not return_info:
+        return module_blocks
+    else:
+        return module_blocks, info
 
 
 def make_modules_from_gene_groups(gene_groups):

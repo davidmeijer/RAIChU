@@ -36,9 +36,9 @@ def gbk_to_cluster_files(
     :param out_path_core: Path to output core cluster file.
     :param out_path_tailoring: Path to output tailoring cluster file (optional).
     """
-    module_blocks = get_nrps_pks_modules(gbk_path)
+    module_blocks, cluster_info = get_nrps_pks_modules(gbk_path, return_info=True)
     cluster_repr = module_blocks.make_raichu_cluster()
-    cluster_repr.write_cluster_core(out_path_core)
+    cluster_repr.write_cluster_core(out_path_core, cluster_info)
     if out_path_tailoring:
         cluster_repr.write_cluster_tailoring(out_path_tailoring)
 

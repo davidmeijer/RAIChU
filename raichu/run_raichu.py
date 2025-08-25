@@ -71,6 +71,7 @@ def make_domain(
                 domain_subtype=domain_repr.subtype,
                 active=domain_repr.active,
                 used=domain_repr.used,
+                translation=domain_repr.translation,
             )
         elif domain_class == UnknownDomain:
             domain = UnknownDomain(domain_repr.name)
@@ -141,7 +142,9 @@ def build_cluster(
                 genes.add(domain_repr.gene_name)
             domains.append(domain)
             previous_domain = domain
+
         module_type = ModuleType.from_string(module_repr.type)
+
         if module_type.name == "PKS":
             if module_repr.subtype is not None:
                 module_subtype = PKSModuleSubtype.from_string(module_repr.subtype)
@@ -193,7 +196,9 @@ def build_cluster(
             new_starter = True
 
         modules.append(module)
+
     cluster = ModularCluster(modules, cluster_repr.tailoring_enzymes)
+
     # has_functional_modules = False
     # for module in cluster.modules:
     #     if not module.is_broken:

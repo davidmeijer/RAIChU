@@ -249,10 +249,12 @@ class RecognitionDomain(Domain):
         active: bool = True,
         domain_name: Union[str, None] = None,
         used: bool = True,
+        translation: Union[str, None] = None
     ) -> None:
 
         superclass = DomainSuperClass.from_string("RECOGNITION")
         domain_type = RecognitionDomainType.from_string(domain_type)
+        self.translation = translation
 
         if domain_subtype is not None:
             raise ValueError(

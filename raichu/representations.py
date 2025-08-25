@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List, Union
+from typing import List, Union, Any, Optional, Dict
 import os
 
 
@@ -61,9 +61,17 @@ class ClusterRepresentation:
     modules: List[ModuleRepresentation]
     tailoring_enzymes: Union[List[TailoringRepresentation], None] = None
 
-    def write_cluster_core(self, out_path: str) -> None:
+    def write_cluster_core(self, out_path: str, cluster_info: Optional[Dict[str, Any]] = None) -> None:
         """Write the core representation of the cluster to a file."""
         with open(out_path, "w") as out:
+
+            # write out cluster info
+            if cluster_info is None:
+                cluster_info = {}
+            
+            # for key, value in cluster_info.items():
+            #     out.write(f"# {key}: {value}\n")
+
             out.write(
                 "gene_name"
                 "\tmodule_nr"
@@ -107,22 +115,23 @@ class ClusterRepresentation:
                 "\tmodification_sites"
                 "\n"
             )
-            for enzyme in self.tailoring_enzymes:
-                if enzyme.modification_sites:
-                    site_reprs = []
-                    for modification_site in enzyme.modification_sites:
-                        site_repr = "|".join(list(map(str, modification_site)))
-                        site_reprs.append(site_repr)
-                    site_str = ":".join(site_reprs)
-                else:
-                    site_str = str(None)
-                tailoring.write(
-                    f"{enzyme.gene_name}"
-                    f"\t{enzyme.type}"
-                    f"\t{enzyme.substrate}"
-                    f"\t{site_str}"
-                    "\n"
-                )
+            if self.tailoring_enzymes:
+                for enzyme in self.tailoring_enzymes:
+                    if enzyme.modification_sites:
+                        site_reprs = []
+                        for modification_site in enzyme.modification_sites:
+                            site_repr = "|".join(list(map(str, modification_site)))
+                            site_reprs.append(site_repr)
+                        site_str = ":".join(site_reprs)
+                    else:
+                        site_str = str(None)
+                    tailoring.write(
+                        f"{enzyme.gene_name}"
+                        f"\t{enzyme.type}"
+                        f"\t{enzyme.substrate}"
+                        f"\t{site_str}"
+                        "\n"
+                    )
 
 
     def write_cluster(self, out_dir):
@@ -260,6 +269,17 @@ class ClusterRepresentation:
         module_representations = []
         modules = {}
         with open(in_cluster, "r") as cluster:
+
+            # read and skip all lines that start with #, if no more lines with # continue with rest
+            while True:
+                line = cluster.readline().strip()
+                if not line:
+                    break
+                if line.startswith("#"):
+                    continue
+                cluster.seek(0)
+                break
+
             cluster.readline()
             for line in cluster:
                 line = line.strip()

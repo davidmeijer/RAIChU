@@ -15,3 +15,5 @@ build/
 
 # ignore /out folder 
 out/
+
+.DS_Store
