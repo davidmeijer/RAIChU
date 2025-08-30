@@ -54,7 +54,7 @@ def read_cluster_files(
     :param cluster_file_tailoring: Path to tailoring cluster file (optional).
     :return: A ModularCluster instance or None if cluster contains no functional modules.
     """
-    cluster_repr = ClusterRepresentation.from_cluster_files(cluster_file_core, cluster_file_tailoring)
+    cluster_repr, cluster_info = ClusterRepresentation.from_cluster_files(cluster_file_core, cluster_file_tailoring)
     cluster = build_cluster(cluster_repr, strict=False)
     
     # Check for functional modules
@@ -66,7 +66,7 @@ def read_cluster_files(
     if not has_functional_modules:
         return None
 
-    return cluster
+    return cluster, cluster_info
 
 
 def get_biosynthetic_modules(cluster: "ModularCluster") -> Optional[List["BiosyntheticModule"]]:

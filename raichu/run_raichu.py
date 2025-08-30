@@ -3,6 +3,7 @@ import csv
 
 from pikachu.general import structure_to_smiles
 
+from raichu.errors import NoModulesException
 from raichu.substrate import PksStarterSubstrate
 from raichu.cluster.modular_cluster import ModularCluster
 from raichu.cluster.ripp_cluster import RiPPCluster
@@ -100,9 +101,10 @@ def build_cluster(
     previous_domain = None
 
     if len(cluster_repr.modules) == 0:
-        raise ValueError(
-            "Cluster is empty.This can happen with Type III PKS clusters. Please check the input file."
-        )
+        # raise ValueError(
+        #     "Cluster is empty.This can happen with Type III PKS clusters. Please check the input file."
+        # )
+        raise NoModulesException("Cluster is empty. This can happen with Type III PKS clusters. Please check the input file.")
 
     for i, module_repr in enumerate(cluster_repr.modules):
         if i == 0 or new_starter:

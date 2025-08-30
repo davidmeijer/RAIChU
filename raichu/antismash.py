@@ -5,6 +5,7 @@ from itertools import permutations
 
 from sys import argv
 from Bio import SeqIO
+from raichu.errors import NoModulesException
 from raichu.representations import (
     ClusterRepresentation,
     ModuleRepresentation,
@@ -708,20 +709,66 @@ class AntiSmashGene:
 
     def __repr__(self):
         return f"{self.name}"
+    
+
+def check_tailoring(gene_functions: list[str], tailoring: str) -> bool:
+    words = []
+    for gene_function in gene_functions:
+        words.extend(gene_function.split(" "))
+    words = [word.lower() for word in words]
+    has_tailoring = any([tailoring in w for w in words])
+    return has_tailoring
 
 
 def get_nrps_pks_modules(antismash_gbk, return_info=False):
     info = {
-        "test_key": "test_value"
+        "file_path": antismash_gbk
     }
 
     as_domains = parse_antismash_domains_gbk(antismash_gbk)
     genes = []
     for record in SeqIO.parse(antismash_gbk, "genbank"):
+
+        # print(record.__dict__.keys())
+        info["locus"] = record.name
+        info["length_bp"] = len(record.seq)
+        info["molecule_type"] = record.annotations.get("molecule_type", None)
+        info["topology"] = record.annotations.get("topology", None)
+        info["division"] = record.annotations.get("data_file_division", None)
+        info["date"] = record.annotations.get("date", None)
+        info["definition"] = record.description
+        info["accessions"] = record.annotations.get("accessions", [])
+        info["version"] = record.annotations.get("sequence_version", None)
+        info["keywords"] = record.annotations.get("keywords", [])
+        info["source"] = record.annotations.get("source", None)
+        info["organism"] = record.annotations.get("organism", None)
+        info["taxonomy"] = record.annotations.get("taxonomy", [])
+        info["comment"] = record.annotations.get("comment", None)
+        tailoring_genes = set()
+
         for feature in record.features:
             if feature.type == 'CDS':
 
                 qualifiers = feature.qualifiers
+
+                gene_functions = qualifiers.get("gene_functions", [])
+                has_halogenase = check_tailoring(gene_functions, "halogenase")
+                has_methyltransferase = check_tailoring(gene_functions, "methyltransferase")
+                has_glycosyltransferase = check_tailoring(gene_functions, "glycosyltransferase")
+                has_oxygenase = any([
+                    check_tailoring(gene_functions, "monooxygenase"),
+                    check_tailoring(gene_functions, "P450")
+                ])
+
+                if has_halogenase:
+                    tailoring_genes.add("halogenase")
+                if has_methyltransferase:
+                    tailoring_genes.add("methyltransferase")
+                if has_glycosyltransferase:
+                    tailoring_genes.add("glycosyltransferase")
+                if has_oxygenase:
+                    tailoring_genes.add("oxygenase")
+
                 synonyms = []
 
                 if 'gene' in qualifiers:
@@ -745,6 +792,17 @@ def get_nrps_pks_modules(antismash_gbk, return_info=False):
                     print(f"Warning: No identifier found for a CDS. Domains on this gene will not be processed.")
                     # for domain in as_domains:
                     #     if domain.gene in synonyms:
+
+            if feature.type == "region":
+                info["region_product"] = feature.qualifiers.get("product", [])
+            if feature.type == "cand_cluster":
+                info["cand_cluster"] = feature.qualifiers.get("product", [])
+            if feature.type == "protocluster":
+                info["protocluster"] = feature.qualifiers.get("product", [])
+            if feature.type == "proto_core":
+                info["proto_core"] = feature.qualifiers.get("product", [])
+
+        info["tailoring_genes"] = list(tailoring_genes)
 
     for domain in as_domains:
         gene_found = False
@@ -808,7 +866,8 @@ def make_modules_from_gene_groups(gene_groups):
         module_groups.append(module_block)
 
     if not module_groups:
-        raise Exception("Cluster is empty. This can happen with Type III PKS clusters. Please check the input file.")
+        # raise Exception("Cluster is empty. This can happen with Type III PKS clusters. Please check the input file.")
+        raise NoModulesException("Cluster is empty. This can happen with Type III PKS clusters. Please check the input file.")
 
     return module_groups
 
@@ -971,7 +1030,8 @@ def make_modules(domains):
         block_strand = antismash_modules[0].strand
         module_block = ModuleBlock(block_start, block_end, block_strand, antismash_modules)
     else:
-        raise Exception("Cluster is empty.This can happen with Type III PKS clusters. Please check the input file.")
+        # raise Exception("Cluster is empty.This can happen with Type III PKS clusters. Please check the input file.")
+        raise NoModulesException("Cluster is empty. This can happen with Type III PKS clusters. Please check the input file.")
 
     return module_block
 

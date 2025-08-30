@@ -24,12 +24,9 @@ def main():
     os.makedirs(args.o, exist_ok=True)
 
     cluster_file_core = os.path.join(args.o, "cluster.txt")
-    cluster_file_tailoring = os.path.join(args.o, "tailoring.txt")
-
-    # TODO: get general organism information into cluster file, make sure it can be read as well
-
-    gbk_to_cluster_files(args.i, cluster_file_core, cluster_file_tailoring)
-    cluster = read_cluster_files(cluster_file_core)
+    gbk_to_cluster_files(args.i, cluster_file_core)
+    
+    cluster, cluster_info = read_cluster_files(cluster_file_core)
     if not cluster:
         exit(0)
     
@@ -62,7 +59,7 @@ def main():
                 elif set(tailoring_domains) == set(expected_domains_D):
                     motif_name = "D"
                 else:
-                    print(tailoring_domains)
+                    # print(tailoring_domains)
                     motif_name = "A"
 
                 at_domains = [d for d in m.domains if d.type == RD.AT]
@@ -75,7 +72,7 @@ def main():
 
                 substrate_name = at_domain.substrate.name
                 if substrate_name == "WILDCARD":
-                    pass
+                    unit_name = "other"
                 elif substrate_name == "MALONYL_COA":
                     unit_name = f"{motif_name}1"
                 elif substrate_name == "METHYLMALONYL_COA":
@@ -87,9 +84,9 @@ def main():
                 else:
                     unit_name = motif_name
                 
-                for d in m.domains:
-                    print(d.type, d.subtype)
-                print(unit_name)
+                # for d in m.domains:
+                #     print(d.type, d.subtype)
+                # print(unit_name)
                 primary_sequence.append(unit_name)
 
                 # TODO: get info on stereochemistry
@@ -116,12 +113,14 @@ def main():
 
             else:
                 pass
-    print(primary_sequence)
 
-    path = os.path.join(args.o, "cluster.svg")
-    svg_str = draw_cluster(cluster)
-    with open(path, "w") as f:
-        f.write(svg_str)
+    print(primary_sequence)
+    print(cluster_info)
+
+    # path = os.path.join(args.o, "cluster.svg")
+    # svg_str = draw_cluster(cluster)
+    # with open(path, "w") as f:
+    #     f.write(svg_str)
 
 
 if __name__ == "__main__":

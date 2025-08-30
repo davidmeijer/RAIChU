@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from typing import List, Union, Any, Optional, Dict
 import os
+import ast
 
 
 @dataclass
@@ -69,8 +70,8 @@ class ClusterRepresentation:
             if cluster_info is None:
                 cluster_info = {}
             
-            # for key, value in cluster_info.items():
-            #     out.write(f"# {key}: {value}\n")
+            for key, value in cluster_info.items():
+                out.write(f"# {key}: {value}\n")
 
             out.write(
                 "gene_name"
@@ -266,20 +267,41 @@ class ClusterRepresentation:
     def from_cluster_files(cls, in_cluster, in_tailoring):
         # in_cluster = os.path.join(in_dir, "cluster.txt")
         # in_tailoring = os.path.join(in_dir, "tailoring.txt")
+        cluster_info = {}
         module_representations = []
         modules = {}
         with open(in_cluster, "r") as cluster:
-
-            # read and skip all lines that start with #, if no more lines with # continue with rest
+            
+            header_lines = []
+            # Read and collect all lines starting with #
             while True:
-                line = cluster.readline().strip()
+                pos = cluster.tell()
+                line = cluster.readline()
                 if not line:
                     break
+                line = line.strip()
                 if line.startswith("#"):
-                    continue
-                cluster.seek(0)
-                break
+                    header_lines.append(line)
+                else:
+                    # rewind to start of first non-# line
+                    cluster.seek(pos)
+                    break
 
+            # parse header lines of form "# key: value"
+            for hl in header_lines:
+                if ":" in hl:
+                    key, value = hl[1:].split(":", 1)
+                    key = key.strip()
+                    value = value.strip()
+                    if value[0] == "[" and value[-1] == "]":
+                        try:
+                            cluster_info[key] = ast.literal_eval(value)
+                        except (ValueError, SyntaxError):
+                            cluster_info[key] = value
+                    else:
+                        cluster_info[key] = value
+
+            cluster.readline()
             cluster.readline()
             for line in cluster:
                 line = line.strip()
@@ -368,4 +390,4 @@ class ClusterRepresentation:
         else:
             tailoring_enzymes = None
 
-        return cls(module_representations, tailoring_enzymes)
+        return cls(module_representations, tailoring_enzymes), cluster_info
