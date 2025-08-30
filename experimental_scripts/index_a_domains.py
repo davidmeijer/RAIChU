@@ -46,30 +46,30 @@ def iter_files_with_extension(root_dir: str, extension: str) -> Iterator[Path]:
             yield path
 
 
-def download_file_with_progress(download_link: str, destination: str) -> None:
-    """
-    Download a file from a URL with a progress bar.
+# def download_file_with_progress(download_link: str, destination: str) -> None:
+#     """
+#     Download a file from a URL with a progress bar.
 
-    :param download_link: The URL of the file to download.
-    :param destination: Local path (string) where the file will be saved.
-    """
-    with requests.get(download_link, stream=True) as r:
-        r.raise_for_status()
-        total_size = int(r.headers.get("content-length", 0))
-        block_size = 8192  # 8 KB chunks
+#     :param download_link: The URL of the file to download.
+#     :param destination: Local path (string) where the file will be saved.
+#     """
+#     with requests.get(download_link, stream=True) as r:
+#         r.raise_for_status()
+#         total_size = int(r.headers.get("content-length", 0))
+#         block_size = 8192  # 8 KB chunks
 
-        with open(destination, "wb") as f, tqdm(
-            total=total_size,
-            unit="B",
-            unit_scale=True,
-            unit_divisor=1024,
-            desc=destination,
-            ascii=True,
-        ) as bar:
-            for chunk in r.iter_content(chunk_size=block_size):
-                if chunk:  # filter out keep-alive chunks
-                    f.write(chunk)
-                    bar.update(len(chunk))
+#         with open(destination, "wb") as f, tqdm(
+#             total=total_size,
+#             unit="B",
+#             unit_scale=True,
+#             unit_divisor=1024,
+#             desc=destination,
+#             ascii=True,
+#         ) as bar:
+#             for chunk in r.iter_content(chunk_size=block_size):
+#                 if chunk:  # filter out keep-alive chunks
+#                     f.write(chunk)
+#                     bar.update(len(chunk))
 
 
 def main() -> None:
