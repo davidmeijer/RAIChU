@@ -3,7 +3,7 @@
 import argparse 
 import logging
 import os
-import requests
+# import requests
 from tqdm import tqdm
 from pathlib import Path
 from typing import Iterator
