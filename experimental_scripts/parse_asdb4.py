@@ -21,14 +21,18 @@ from raichu.errors import NoModulesException
 GENBANK_PATTERNS = ["*.gbk", "*.gb", "*.gbff", "*.genbank"]
 
 
-def zipdir(source_dir: Path, zip_path: Path):
-    """Zip the contents of source_dir into zip_path."""
-    with zipfile.ZipFile(zip_path, "w", compression=zipfile.ZIP_DEFLATED) as zf:
+def zip_and_remove_dir(source_dir: Path):
+    """Zip the contents of source_dir, then remove the directory."""
+    out_zip = source_dir.with_suffix(".zip")
+    with zipfile.ZipFile(out_zip, "w", compression=zipfile.ZIP_DEFLATED) as zf:
         for dirpath, _, filenames in os.walk(source_dir):
             for name in filenames:
                 abs_path = Path(dirpath) / name
                 arcname = abs_path.relative_to(source_dir)
                 zf.write(abs_path, arcname)
+    # remove the original directory
+    shutil.rmtree(source_dir, ignore_errors=True)
+    return out_zip
 
 
 def find_genbank_files(root: Path):
@@ -119,9 +123,8 @@ def process_batch_zip(zip_file: Path, output_root: Path, workers: int) -> tuple[
         logging.info("Done %s | total:%d ok:%d fail:%d -> %s",
                      zip_file.name, total, ok, fail, output_batch_root)
         
-        out_zip = output_batch_root.with_suffix(".zip")
-        zipdir(output_batch_root, out_zip)
-        logging.info("Zipped output batch to %s", out_zip)
+        out_zip = zip_and_remove_dir(output_batch_root)
+        logging.info("Zipped + removed output dir -> %s", out_zip)
 
         return total, ok, fail
 
