@@ -743,7 +743,10 @@ def get_nrps_pks_modules(antismash_gbk, return_info=False):
         info["source"] = record.annotations.get("source", None)
         info["organism"] = record.annotations.get("organism", None)
         info["taxonomy"] = record.annotations.get("taxonomy", [])
-        info["comment"] = record.annotations.get("comment", None)
+        comment = record.annotations.get("comment", None)
+        # remove all new lines from comment
+        comment = comment.replace("\n", " ") if comment else None
+        info["comment"] = comment
         tailoring_genes = set()
 
         for feature in record.features:
