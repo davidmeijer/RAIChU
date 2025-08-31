@@ -46,32 +46,6 @@ def iter_files_with_extension(root_dir: str, extension: str) -> Iterator[Path]:
             yield path
 
 
-# def download_file_with_progress(download_link: str, destination: str) -> None:
-#     """
-#     Download a file from a URL with a progress bar.
-
-#     :param download_link: The URL of the file to download.
-#     :param destination: Local path (string) where the file will be saved.
-#     """
-#     with requests.get(download_link, stream=True) as r:
-#         r.raise_for_status()
-#         total_size = int(r.headers.get("content-length", 0))
-#         block_size = 8192  # 8 KB chunks
-
-#         with open(destination, "wb") as f, tqdm(
-#             total=total_size,
-#             unit="B",
-#             unit_scale=True,
-#             unit_divisor=1024,
-#             desc=destination,
-#             ascii=True,
-#         ) as bar:
-#             for chunk in r.iter_content(chunk_size=block_size):
-#                 if chunk:  # filter out keep-alive chunks
-#                     f.write(chunk)
-#                     bar.update(len(chunk))
-
-
 def main() -> None:
     """Entry point of script."""
     args = cli()
@@ -84,15 +58,6 @@ def main() -> None:
     handler = logging.FileHandler(log_filepath)
     handler.setLevel(logging.INFO)
     logger.addHandler(handler)
-
-    # download Parasect model if it doesn't exist
-    # model_filepath = os.path.join(args.workdir, "parasect.pt")
-    # if not check_existence_file(model_filepath):
-    #     logger.info(f"Downloading Parasect model to {model_filepath}")
-    #     download_link_parasect = "https://zenodo.org/records/13165500/files/model.parasect?download=1"
-    #     download_file_with_progress(download_link_parasect, model_filepath)
-    # else:
-    #     logger.info(f"Parasect model already exists at {model_filepath}")
 
     # open file path and make sure we can append to it, delete file if it already exists
     out_filepath = os.path.join(args.workdir, "a_domains.fasta")
