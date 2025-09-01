@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# pip innstall git+https://github.com/BTheDragonMaster/parasect.git@webapp
+# pip install git+https://github.com/BTheDragonMaster/parasect.git@webapp
 
 import argparse 
 import logging
