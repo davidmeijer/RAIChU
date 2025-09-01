@@ -3,7 +3,7 @@
 import argparse 
 import logging
 import os
-# import requests
+import traceback
 from tqdm import tqdm
 from pathlib import Path
 from typing import Iterator
@@ -71,7 +71,10 @@ def main() -> None:
         filename = os.path.basename(filepath)
         filename = os.path.splitext(filename)[0]
         try:
-            cluster, cluster_info = read_cluster_files(filepath)
+            result = read_cluster_files(filepath)
+            if result is None:
+                continue # no functional domains
+            cluster, cluster_info = result
             for module in cluster.modules:
                 if isinstance(module, NRPSModule):
                     for domain in module.domains:
@@ -86,7 +89,10 @@ def main() -> None:
             failed += 1
             continue
         except Exception as e:
-            logger.error(f"Error processing {filepath}: {e}")
+
+            # print full stack trace
+            tb_str = traceback.format_exc()
+            logger.error(f"{tb_str}\nError processing {filepath}: {e}")
             failed += 1
             continue
         processed_files += 1
